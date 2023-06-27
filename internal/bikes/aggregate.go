@@ -20,19 +20,21 @@ type AggregatedBike struct {
 }
 
 // AggregateBikes goes over the crowdedness response and sums all fietsplaatsen.
-func AggregateBikes(responses crowdedness.Response) (*AggregatedBike, error) {
-	var aggregatedBike AggregatedBike
-	for i, response := range responses[0].DrukteBerichten {
-		if i == 0 {
-			aggregatedBike.Station = response.StartStationUic
-			aggregatedBike.Treinnummer = response.Treinnummer
-			aggregatedBike.Fietsplaatsen = response.Fietsplaatsen
-			aggregatedBike.Date = response.VerkeersdatumAms
-			continue
+func AggregateBikes(responses crowdedness.Response) (*[]AggregatedBike, error) {
+	lastUpdated := time.Now().Format("2006-01-02 15:04:05")
+	var aggregatedBikes []AggregatedBike
+	for _, response := range responses[0].DrukteBerichten {
+		bike := AggregatedBike{
+			Treinnummer:   response.Treinnummer,
+			Station:       response.StartStationUic,
+			Fietsplaatsen: response.Fietsplaatsen,
+			Date:          response.VerkeersdatumAms,
+			LastUpdated:   lastUpdated,
 		}
-		aggregatedBike.Fietsplaatsen += response.Fietsplaatsen
+		aggregatedBikes = append(aggregatedBikes, bike)
+
 	}
-	return &aggregatedBike, nil
+	return &aggregatedBikes, nil
 }
 
 // createTable will create the 'fietsplaatsen' table if it does not exist.
@@ -55,8 +57,7 @@ func createTable(db *sql.DB) error {
 }
 
 // insertIntoTable will write a query result into the 'fietsplaatsen' table.
-func insertIntoTable(db *sql.DB, bikes *AggregatedBike) error {
-	lastUpdated := time.Now().Format("2006-01-02 15:04:05")
+func insertIntoTable(db *sql.DB, bikes *[]AggregatedBike) error {
 	const insertIntoTable string = `
 	INSERT INTO fietsplaatsen (
 		treinnummer,
@@ -66,15 +67,17 @@ func insertIntoTable(db *sql.DB, bikes *AggregatedBike) error {
 		last_updated
 	) VALUES (?, ?, ?, ?, ?);`
 
-	if _, err := db.Exec(insertIntoTable, bikes.Treinnummer, bikes.Station, bikes.Fietsplaatsen, bikes.Date, lastUpdated); err != nil {
-		return err
+	for _, b := range *bikes {
+		if _, err := db.Exec(insertIntoTable, b.Treinnummer, b.Station, b.Fietsplaatsen, b.Date, b.LastUpdated); err != nil {
+			return err
+		}
 	}
 
 	return nil
 }
 
-// WriteBikes creates a database connection and write results to the database.
-func WriteBikes(bikes *AggregatedBike) error {
+// WriteBikesToDB creates a database connection and write results to the database.
+func WriteBikesToDB(bikes *[]AggregatedBike) error {
 	db, err := sql.Open("sqlite3", "druktezoeker.db")
 	if err != nil {
 		return err

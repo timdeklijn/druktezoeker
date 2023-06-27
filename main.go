@@ -64,7 +64,7 @@ func fietsplaatsAggregation(config *getter.Config, trainNumbers []string) error 
 	if err != nil {
 		return err
 	}
-	if err := bikes.WriteBikes(fietsPlaatsen); err != nil {
+	if err := bikes.WriteBikesToDB(fietsPlaatsen); err != nil {
 		return err
 	}
 
