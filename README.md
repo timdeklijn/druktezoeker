@@ -24,23 +24,25 @@ GLOBAL OPTIONS:
 ### Fietsen
 
 ```shell
-
 NAME:
    druktezoeker bikes
 
 USAGE:
    druktezoeker bikes [command options] [arguments...]
 
+DESCRIPTION:
+   Zoek totaal aantal fietsplaatsen voor een trein
+
 OPTIONS:
-   --station value  station uic
-   --train value    train number
-   --api_key value   [$APIM_SUBSCRIPTION_KEY]
-   --host value      [$HOST]
-   --help, -h       show help
+   --trains value [ --trains value ]  train numbers
+   --api_key value                     [$APIM_SUBSCRIPTION_KEY]
+   --host value                        [$HOST]
+   --help, -h                         show help
+
 ```
 
 ## Example
 
 ```shell
-go run main.go bikes -station=8400136 -train=8400258
+go run main.go bikes -trains=3612 -trains=36190
 ```

@@ -20,9 +20,9 @@ func main() {
 				Name:        "bikes",
 				Description: "Zoek totaal aantal fietsplaatsen voor een trein",
 				Flags: []cli.Flag{
-					&cli.StringFlag{
-						Name:  "train",
-						Usage: "train number",
+					&cli.StringSliceFlag{
+						Name:  "trains",
+						Usage: "train numbers",
 					},
 					&cli.StringFlag{
 						Name:     "api_key",
@@ -36,7 +36,7 @@ func main() {
 					},
 				},
 				Action: func(c *cli.Context) error {
-					trainNumbers := []string{c.String("train")}
+					trainNumbers := c.StringSlice("trains")
 					config, err := getter.NewConfig(c.String("api_key"), c.String("host"))
 					if err != nil {
 						return err
