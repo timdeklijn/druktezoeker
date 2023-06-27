@@ -2,7 +2,7 @@ package crowdedness
 
 import "time"
 
-type Response struct {
+type Crowdedness struct {
 	Vervoerder                  string    `json:"vervoerder"`
 	Treinnummer                 int       `json:"treinnummer"`
 	StartStationUic             string    `json:"start_station_uic"`
@@ -17,4 +17,9 @@ type Response struct {
 	LaaddatumUtc                string    `json:"laaddatum_utc"`
 }
 
-type Responses []Response
+type TrainResponse struct {
+	Treinnummer     int           `json:"treinnummer"`
+	DrukteBerichten []Crowdedness `json:"drukte_berichten"`
+}
+
+type Response []TrainResponse

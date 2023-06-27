@@ -20,8 +20,8 @@ func getDate() string {
 }
 
 // buildURL builds a URL for the NS API.
-func buildURL(host, station, date string) string {
-	return fmt.Sprintf("%s/sigma/crowdedness/station/%s/%s", host, station, date)
+func buildURL(host, date string) string {
+	return fmt.Sprintf("%s/sigma/crowdedness/trains/%s", host, date)
 }
 
 // buildRequest builds a request for the NS API.
@@ -37,18 +37,19 @@ func buildRequest(apiKey, url string, trainNumbers []string) (*http.Request, err
 		q.Add("train_numbers", trainNumber)
 	}
 	req.URL.RawQuery = q.Encode()
+	logrus.Infof("Request URL: %s", req.URL.String())
 	return req, nil
 }
 
 // Crowdedness returns the crowdedness of a station for a given date.
-func Crowdedness(config *Config, station string, trainNumbers []string) (*crowdedness.Responses, error) {
-	var responses crowdedness.Responses
+func Crowdedness(config *Config, trainNumbers []string) (*crowdedness.Response, error) {
+	var responses crowdedness.Response
 
 	date := getDate()
-	logrus.Infof("Searching for trains on '%s' from '%s' for %v", date, station, trainNumbers)
+	logrus.Infof("Searching for trains on '%s' for %v", date, trainNumbers)
 
 	// Prep request
-	url := buildURL(config.Host, station, date)
+	url := buildURL(config.Host, date)
 	client := &http.Client{}
 	req, err := buildRequest(config.ApiKey, url, trainNumbers)
 	if err != nil {
@@ -61,6 +62,10 @@ func Crowdedness(config *Config, station string, trainNumbers []string) (*crowde
 		return nil, err
 	}
 	if response.StatusCode != 200 {
+		body, err := io.ReadAll(response.Body)
+		if err == nil {
+			logrus.Infof("Crowdedness body: %s", string(body))
+		}
 		return nil, fmt.Errorf("unexpected status code: %d", response.StatusCode)
 	}
 
@@ -69,10 +74,10 @@ func Crowdedness(config *Config, station string, trainNumbers []string) (*crowde
 	if err != nil {
 		return nil, err
 	}
+
 	if err := json.Unmarshal(body, &responses); err != nil {
 		return nil, err
 	}
 
-	logrus.Infof("%+v", responses[0])
 	return &responses, nil
 }

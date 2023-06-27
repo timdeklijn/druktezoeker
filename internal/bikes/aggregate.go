@@ -20,9 +20,9 @@ type AggregatedBike struct {
 }
 
 // AggregateBikes goes over the crowdedness response and sums all fietsplaatsen.
-func AggregateBikes(responses crowdedness.Responses) (*AggregatedBike, error) {
+func AggregateBikes(responses crowdedness.Response) (*AggregatedBike, error) {
 	var aggregatedBike AggregatedBike
-	for i, response := range responses {
+	for i, response := range responses[0].DrukteBerichten {
 		if i == 0 {
 			aggregatedBike.Station = response.StartStationUic
 			aggregatedBike.Treinnummer = response.Treinnummer

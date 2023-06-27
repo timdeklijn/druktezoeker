@@ -21,10 +21,6 @@ func main() {
 				Description: "Zoek totaal aantal fietsplaatsen voor een trein",
 				Flags: []cli.Flag{
 					&cli.StringFlag{
-						Name:  "station",
-						Usage: "station uic",
-					},
-					&cli.StringFlag{
 						Name:  "train",
 						Usage: "train number",
 					},
@@ -40,14 +36,13 @@ func main() {
 					},
 				},
 				Action: func(c *cli.Context) error {
-					station := c.String("station")
 					trainNumbers := []string{c.String("train")}
 					config, err := getter.NewConfig(c.String("api_key"), c.String("host"))
 					if err != nil {
 						return err
 					}
 
-					return fietsplaatsAggregation(config, station, trainNumbers)
+					return fietsplaatsAggregation(config, trainNumbers)
 				},
 			},
 		},
@@ -59,8 +54,8 @@ func main() {
 
 // fietsplaatsAggregation aggregates the fietsplaatsen for a given station and train numbers and
 // writes to the database.
-func fietsplaatsAggregation(config *getter.Config, station string, trainNumbers []string) error {
-	crowdedness, err := getter.Crowdedness(config, station, trainNumbers)
+func fietsplaatsAggregation(config *getter.Config, trainNumbers []string) error {
+	crowdedness, err := getter.Crowdedness(config, trainNumbers)
 	if err != nil {
 		return err
 	}
