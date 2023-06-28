@@ -1,22 +1,24 @@
 package main
 
 import (
+	"github.com/urfave/cli/v2"
 	"os"
 
 	"github.com/sirupsen/logrus"
-	"github.com/urfave/cli/v2"
-
 	"github.com/timdeklijn/druktezoeker/internal/bikes"
 	"github.com/timdeklijn/druktezoeker/internal/getter"
 	_ "github.com/timdeklijn/druktezoeker/internal/log"
 )
 
 func main() {
+	// Create CLI interface
 	app := &cli.App{
 		Name:  "druktezoeker",
 		Usage: "Bevraag de Crowdedness API.",
+		// Add subcommands to interface
 		Commands: []*cli.Command{
 			{
+				// bikes will look for fietsplaatsen for a list of trains on a specific date.
 				Name:        "bikes",
 				Description: "Zoek totaal aantal fietsplaatsen voor een trein",
 				Flags: []cli.Flag{
@@ -60,7 +62,7 @@ func fietsplaatsAggregation(config *getter.Config, trainNumbers []string) error 
 		return err
 	}
 
-	fietsPlaatsen, err := bikes.AggregateBikes(*crowdedness)
+	fietsPlaatsen, err := bikes.CollectBikes(*crowdedness)
 	if err != nil {
 		return err
 	}

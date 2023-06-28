@@ -9,10 +9,10 @@ type Config struct {
 
 func NewConfig(apiKey string, host string) (*Config, error) {
 	if apiKey == "" {
-		return nil, fmt.Errorf("api key is empty")
+		return nil, fmt.Errorf("api key environment variable is empty")
 	}
 	if host == "" {
-		return nil, fmt.Errorf("host is empty")
+		return nil, fmt.Errorf("host environment variable is empty")
 	}
 	return &Config{
 		ApiKey: apiKey,

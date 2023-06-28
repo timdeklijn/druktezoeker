@@ -3,43 +3,15 @@ package getter
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/timdeklijn/druktezoeker/internal/crowdedness"
 	"io"
 	"net/http"
 	"time"
 
 	"github.com/sirupsen/logrus"
 
-	"github.com/timdeklijn/druktezoeker/internal/crowdedness"
 	_ "github.com/timdeklijn/druktezoeker/internal/log"
 )
-
-// getDate returns the current date in the format YYYY-MM-DD.
-func getDate() string {
-	currentDate := time.Now()
-	return currentDate.Format("2006-01-02")
-}
-
-// buildURL builds a URL for the NS API.
-func buildURL(host, date string) string {
-	return fmt.Sprintf("%s/sigma/crowdedness/trains/%s", host, date)
-}
-
-// buildRequest builds a request for the NS API.
-func buildRequest(apiKey, url string, trainNumbers []string) (*http.Request, error) {
-	req, err := http.NewRequest("GET", url, nil)
-	if err != nil {
-		return nil, err
-	}
-	req.Header.Set("Ocp-Apim-Subscription-Key", apiKey)
-
-	q := req.URL.Query()
-	for _, trainNumber := range trainNumbers {
-		q.Add("train_numbers", trainNumber)
-	}
-	req.URL.RawQuery = q.Encode()
-	logrus.Infof("Request URL: %s", req.URL.String())
-	return req, nil
-}
 
 // Crowdedness returns the crowdedness of a station for a given date.
 func Crowdedness(config *Config, trainNumbers []string) (*crowdedness.Response, error) {
@@ -79,5 +51,35 @@ func Crowdedness(config *Config, trainNumbers []string) (*crowdedness.Response, 
 		return nil, err
 	}
 
+	fmt.Printf("%+v", responses)
+
 	return &responses, nil
+}
+
+// getDate returns the current date in the format YYYY-MM-DD.
+func getDate() string {
+	currentDate := time.Now()
+	return currentDate.Format("2006-01-02")
+}
+
+// buildURL builds a URL for the NS API 'trains' endpoint.
+func buildURL(host, date string) string {
+	return fmt.Sprintf("%s/sigma/crowdedness/trains/%s", host, date)
+}
+
+// buildRequest builds a request for the NS API.
+func buildRequest(apiKey, url string, trainNumbers []string) (*http.Request, error) {
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Ocp-Apim-Subscription-Key", apiKey)
+
+	q := req.URL.Query()
+	for _, trainNumber := range trainNumbers {
+		q.Add("train_numbers", trainNumber)
+	}
+	req.URL.RawQuery = q.Encode()
+	logrus.Infof("Request URL: %s", req.URL.String())
+	return req, nil
 }

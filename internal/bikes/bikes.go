@@ -9,9 +9,9 @@ import (
 	_ "github.com/timdeklijn/druktezoeker/internal/log"
 )
 
-// AggregatedBike is a struct used to store aggregate fietsplaatsen in before writing
+// BikeItem is a struct used to store aggregate fietsplaatsen in before writing
 // to the database.
-type AggregatedBike struct {
+type BikeItem struct {
 	Treinnummer   int    `db:"treinnummer"`
 	Station       string `db:"station"`
 	Fietsplaatsen int    `db:"fietsplaatsen"`
@@ -19,22 +19,22 @@ type AggregatedBike struct {
 	LastUpdated   string `db:"last_updated"`
 }
 
-// AggregateBikes goes over the crowdedness response and sums all fietsplaatsen.
-func AggregateBikes(responses crowdedness.Response) (*[]AggregatedBike, error) {
+// CollectBikes goes over the crowdedness response and sums all fietsplaatsen.
+func CollectBikes(responses crowdedness.Response) (*[]BikeItem, error) {
 	lastUpdated := time.Now().Format("2006-01-02 15:04:05")
-	var aggregatedBikes []AggregatedBike
+	var bikeItems []BikeItem
 	for _, response := range responses[0].DrukteBerichten {
-		bike := AggregatedBike{
+		bike := BikeItem{
 			Treinnummer:   response.Treinnummer,
 			Station:       response.StartStationUic,
 			Fietsplaatsen: response.Fietsplaatsen,
 			Date:          response.VerkeersdatumAms,
 			LastUpdated:   lastUpdated,
 		}
-		aggregatedBikes = append(aggregatedBikes, bike)
+		bikeItems = append(bikeItems, bike)
 
 	}
-	return &aggregatedBikes, nil
+	return &bikeItems, nil
 }
 
 // createTable will create the 'fietsplaatsen' table if it does not exist.
@@ -57,7 +57,7 @@ func createTable(db *sql.DB) error {
 }
 
 // insertIntoTable will write a query result into the 'fietsplaatsen' table.
-func insertIntoTable(db *sql.DB, bikes *[]AggregatedBike) error {
+func insertIntoTable(db *sql.DB, bikes *[]BikeItem) error {
 	const insertIntoTable string = `
 	INSERT INTO fietsplaatsen (
 		treinnummer,
@@ -77,7 +77,7 @@ func insertIntoTable(db *sql.DB, bikes *[]AggregatedBike) error {
 }
 
 // WriteBikesToDB creates a database connection and write results to the database.
-func WriteBikesToDB(bikes *[]AggregatedBike) error {
+func WriteBikesToDB(bikes *[]BikeItem) error {
 	db, err := sql.Open("sqlite3", "druktezoeker.db")
 	if err != nil {
 		return err
